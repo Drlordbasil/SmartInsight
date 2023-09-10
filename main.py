@@ -47,19 +47,23 @@ class NLPModel:
             sentiment_pipeline = SentimentIntensityAnalyzer()
             topic_modeling_pipeline = TfidfVectorizer()
 
-            sentiment_scores = sentiment_pipeline.polarity_scores(article_content)["compound"]
+            sentiment_scores = sentiment_pipeline.polarity_scores(article_content)[
+                "compound"]
             summary = summarization_pipeline(article_content, max_length=100, min_length=30, do_sample=False)[0][
                 "summary_text"]
 
             # Tokenize and remove stopwords
-            tokens = [word.lower() for word in nltk.word_tokenize(article_content) if word.isalnum()]
+            tokens = [word.lower() for word in nltk.word_tokenize(
+                article_content) if word.isalnum()]
             stopwords = nltk.corpus.stopwords.words("english")
             tokens = [word for word in tokens if word not in stopwords]
             tokenized_content = " ".join(tokens)
 
             # Topic modeling using TF-IDF
-            vectors = topic_modeling_pipeline.fit_transform([tokenized_content, summary])
-            similarity_score = cosine_similarity(vectors[0].reshape(1, -1), vectors[1].reshape(1, -1))[0][0]
+            vectors = topic_modeling_pipeline.fit_transform(
+                [tokenized_content, summary])
+            similarity_score = cosine_similarity(
+                vectors[0].reshape(1, -1), vectors[1].reshape(1, -1))[0][0]
 
             return sentiment_scores, summary, similarity_score
         else:
@@ -77,7 +81,8 @@ class ContentAggregator:
 
     def collect_search_queries(self):
         while True:
-            search_query = input("Enter your search query (type 'stop' to exit): ")
+            search_query = input(
+                "Enter your search query (type 'stop' to exit): ")
             if search_query == "stop":
                 break
             self.user_search_queries.append(search_query)
@@ -108,7 +113,8 @@ class ContentAggregator:
             if article_content:
                 return article_content.text.strip()
             else:
-                print("Error occurred while extracting article content. No article content found.")
+                print(
+                    "Error occurred while extracting article content. No article content found.")
                 return None
         else:
             print("Error occurred while extracting article content.")
@@ -131,7 +137,8 @@ class ContentAggregator:
             if article["user_feedback"] == "interested":
                 self.recommendations.append(article)
 
-        self.recommendations = sorted(self.recommendations, key=lambda x: x["popularity"], reverse=True)
+        self.recommendations = sorted(
+            self.recommendations, key=lambda x: x["popularity"], reverse=True)
 
         return self.recommendations
 
@@ -140,16 +147,20 @@ class ContentAggregator:
             new_articles = []
 
             for search_query in self.user_search_queries:
-                html_content = self.search_engine.search_query_processing(search_query)
+                html_content = self.search_engine.search_query_processing(
+                    search_query)
                 if html_content is None:
                     continue
-                article_titles, article_summaries, article_urls = self.web_scraping(html_content)
+                article_titles, article_summaries, article_urls = self.web_scraping(
+                    html_content)
 
                 for i in range(len(article_urls)):
-                    article_content = self.extract_article_content(article_urls[i])
+                    article_content = self.extract_article_content(
+                        article_urls[i])
                     if article_content is None:
                         continue
-                    sentiment_scores, summary, similarity_score = self.nlp_model.natural_language_processing(article_content)
+                    sentiment_scores, summary, similarity_score = self.nlp_model.natural_language_processing(
+                        article_content)
 
                     new_articles.append({
                         "title": article_titles[i],
@@ -182,7 +193,8 @@ class ContentAggregator:
             message["From"] = sender_email
             message["To"] = receiver_email
 
-            content = MIMEText("Here are your personalized content recommendations:")
+            content = MIMEText(
+                "Here are your personalized content recommendations:")
 
             recommendations = self.personalized_content_recommendations()
 
@@ -194,7 +206,8 @@ class ContentAggregator:
 
             with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
                 server.login(sender_email, password)
-                server.sendmail(sender_email, receiver_email, message.as_string())
+                server.sendmail(sender_email, receiver_email,
+                                message.as_string())
 
         schedule.every(1).day.at("09:00").do(send_email_recommendations)
 
@@ -238,14 +251,16 @@ class AIProgram:
 
             if user_choice == "1":
                 for search_query in self.content_aggregator.user_search_queries:
-                    html_content = self.content_aggregator.search_engine.search_query_processing(search_query)
+                    html_content = self.content_aggregator.search_engine.search_query_processing(
+                        search_query)
                     if html_content is None:
                         continue
                     article_titles, article_summaries, article_urls = self.content_aggregator.web_scraping(
                         html_content)
 
                     for i in range(len(article_urls)):
-                        article_content = self.content_aggregator.extract_article_content(article_urls[i])
+                        article_content = self.content_aggregator.extract_article_content(
+                            article_urls[i])
                         if article_content is None:
                             continue
                         sentiment_scores, summary, similarity_score = self.content_aggregator.nlp_model.natural_language_processing(
